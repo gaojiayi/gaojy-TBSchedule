@@ -34,7 +34,7 @@ public class ScheduleWatcher implements Watcher {
     route.put(path, watcher);
   }
 
-  @Override
+  
   public void process(WatchedEvent event) {
     log.info("已经触发了" + event.getType() + "事件！" + event.getPath());
 

@@ -84,7 +84,7 @@ public class ZKManager {
             Integer.parseInt(this.properties.getProperty(keys.zkSessionTimeout.toString())),
             new Watcher() {
 
-              @Override
+              
               public void process(WatchedEvent event) {
                 sessionEvent(connectonLatch, event);
 
