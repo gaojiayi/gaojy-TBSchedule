@@ -27,6 +27,8 @@ public class TBScheduleManagerFactory implements ApplicationContextAware{
 	 * 是否启动调度管理，如果只是做系统管理，应该设置为false
 	 */
 	public boolean start = true;
+	
+	private int timeInterval = 2000;
 	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
 		// TODO Auto-generated method stub
 		
