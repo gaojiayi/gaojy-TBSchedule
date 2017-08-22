@@ -29,6 +29,10 @@ public class TBScheduleManagerFactory implements ApplicationContextAware{
 	public boolean start = true;
 	
 	private int timeInterval = 2000;
+	
+	public volatile long timerTaskHeartBeatTS = System.currentTimeMillis();
+	
+	private IScheduleDataManager scheduleDataManager;
 	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
 		// TODO Auto-generated method stub
 		
