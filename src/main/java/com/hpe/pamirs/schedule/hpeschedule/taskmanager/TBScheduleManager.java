@@ -3,6 +3,7 @@ package com.hpe.pamirs.schedule.hpeschedule.taskmanager;
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -15,6 +16,7 @@ import org.springframework.aop.target.PrototypeTargetSource;
 import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDeal;
 import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 import com.hpe.pamirs.schedule.hpeschedule.strategy.IStrategyTask;
+import com.hpe.pamirs.schedule.hpeschedule.strategy.TBScheduleManagerFactory;
 /**
  * 
  * @Title :
@@ -44,7 +46,7 @@ public abstract class TBScheduleManager implements IStrategyTask{
   /**
    * 用户标识不同的线程序号
    */
-  private static int nextSerialnumber = 0;
+	private static int  nextSerialNumber = 0;
   
   /**
    * 当前线程组编号
@@ -104,6 +106,24 @@ public abstract class TBScheduleManager implements IStrategyTask{
   
   protected Lock registerLock = new ReentrantLock();
   
+  /**
+   * 运行期信息是否初始化成功
+   */
+  protected boolean isRuntimeInfoInitial = false;
+  
+  TBScheduleManagerFactory factory;
+  
+  public TBScheduleManager(TBScheduleManagerFactory aFactory,String baseTaskType,String ownSign,IScheduleDataManager aScheduleCenter) {
+	this.factory = aFactory;
+	this.currentSerialNumber = serialNumber();
+	this.scheduleCenter = aScheduleCenter;
+	this.taskTypeInfo =  this.scheduleCenter.load
+}
+  
+  
+  private static synchronized int serialNumber() {
+      return nextSerialNumber++;
+}		
   
   public void initialTaskParameter(String strategyName, String taskParameter) throws Exception {
     // TODO Auto-generated method stub
