@@ -14,6 +14,7 @@ import org.apache.log4j.spi.LoggerFactory;
 import org.springframework.aop.target.PrototypeTargetSource;
 
 import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDeal;
+import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 import com.hpe.pamirs.schedule.hpeschedule.strategy.IStrategyTask;
 import com.hpe.pamirs.schedule.hpeschedule.strategy.TBScheduleManagerFactory;
@@ -113,11 +114,14 @@ public abstract class TBScheduleManager implements IStrategyTask{
   
   TBScheduleManagerFactory factory;
   
-  public TBScheduleManager(TBScheduleManagerFactory aFactory,String baseTaskType,String ownSign,IScheduleDataManager aScheduleCenter) {
+  public TBScheduleManager(TBScheduleManagerFactory aFactory,String baseTaskType,String ownSign,IScheduleDataManager aScheduleCenter) throws Exception {
 	this.factory = aFactory;
 	this.currentSerialNumber = serialNumber();
 	this.scheduleCenter = aScheduleCenter;
-	this.taskTypeInfo =  this.scheduleCenter.load
+	this.taskTypeInfo =  this.scheduleCenter.loadTaskTypeBaseInfo(baseTaskType);
+	log.info("create TBScheduleManager for taskType:" + baseTaskType);
+	//清除已经过期1天的TASK，OWN_SING的组合。超过一天没有活动的server视为过期
+	this.scheduleCenter.clearExpireTaskTypeRunningInfo(baseTaskType,ScheduleUtil.getLocalIP() + "清除过期OWN_SIGN信息",this.taskTypeInfo.getExpireOwnSignInterval());
 }
   
   

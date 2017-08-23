@@ -1,6 +1,9 @@
 package com.hpe.pamirs.schedule.hpeschedule.taskmanager;
 
 import java.util.List;
+import java.util.Map;
+
+import org.apache.zookeeper.data.Stat;
 
 import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 
@@ -163,5 +166,71 @@ public interface IScheduleDataManager {
   */
  public List<ScheduleServer> selectScheduleServer(String baseTaskType,String ownSign,String ip,String orderStr) throws Exception;
  
+ /**
+  * 查询调度服务历史记录
+  * @param baseTaskType
+  * @param ownSign
+  * @param ip
+  * @param orderStr
+  * @return
+  * @throws Exception
+  */
+ public List<ScheduleServer> selectHistoryScheduleServer(String baseTaskType,String ownSign,String ip,String orderStr)
+ 	throws Exception;
  
+ public List<ScheduleServer> selectScheduleServerByManagerFactoryUUID(String factoryUUID) throws Exception;
+ 
+ /**
+  * 创建任务项。注意其中的currenserver和requestserver不会起作用
+  * @param taskItems
+  * @throws Exception
+  */
+ public void createScheduletaskItem(ScheduleTaskItem[] taskItems) throws Exception;
+ 
+ /**
+  * 更新任务的状态和处理信息
+  * @param taskType
+  * @param taskItem
+  * @param sts
+  * @param message
+  * @throws Exception
+  */
+ public void updateScheduleTaskItemStatus(String taskType,String taskItem,ScheduleTaskItem.TaskItemSts sts,String message) throws Exception;
+
+ /**
+  * 删除任务项
+  * @param taskType
+  * @param taskItem
+  * @throws Exception
+  */
+ public void deleteScheduletaskItem(String taskType,String taskItem) throws Exception;
+
+ public void initialRunningInfo4Static(String baseTaskType,String ownSign,String uuid) throws Exception;
+ 
+ public void initialRunningInfo4Dynamic(String baseTaskType, String ownSign)throws Exception;
+ 
+ /**
+  * 运行期信息是否初始化成功
+  * @param baseTaskType
+  * @param ownSign
+  * @return
+  * @throws Exception
+  */
+ public boolean isInitialRunningInfoSucuss(String baseTaskType,String ownSign) throws Exception;
+ 
+ public void setInitialRunningInfoSucuss(String baseTaskType,String taskType,String uuid ) throws Exception;
+ 
+ public String getLeader(List<String> serverList);
+ 
+ public long updateReloadTaskItemFlag(String taskType) throws Exception;
+ 
+ public long getReloadTaskItemFlag(String taskType) throws Exception;
+ 
+ /**
+  * 通过taskType获取当前运行的serverList信息
+  * @param taskType
+  * @return
+  * @throws Exception
+  */
+ public Map<String,Stat> getCurrentServerStatList(String taskType) throws Exception;
 }
