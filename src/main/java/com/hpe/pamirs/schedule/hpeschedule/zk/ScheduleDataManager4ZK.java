@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.springframework.aop.ThrowsAdvice;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,6 +24,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.IScheduleDataManager;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.ScheduleServer;
@@ -30,9 +32,10 @@ import com.hpe.pamirs.schedule.hpeschedule.taskmanager.ScheduleTaskItem;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.ScheduleTaskItem.TaskItemSts;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.ScheduleTaskType;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.ScheduleTaskTypeRunningInfo;
+
 /**
  * 
- * @Title :
+ * @Title :zk与调度任务类型数据交互类
  * @author gaojy
  *
  * @Create_Date : 2017年8月24日上午11:26:18
@@ -48,41 +51,83 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
   private String PATH_Server = "server";
   private long zkBaseTime = 0;
   private long localBaseTime = 0;
-  
-  public ScheduleDataManager4ZK(ZKManager aZKManager) throws Exception{
+
+  public ScheduleDataManager4ZK(ZKManager aZKManager) throws Exception {
     this.zkManager = aZKManager;
-    gson = new GsonBuilder().registerTypeAdapter(Timestamp.class, new TimestampTypeAdapter()).setDateFormat("yyyy-MM-dd HH:mm:ss").create();
+    gson =
+        new GsonBuilder().registerTypeAdapter(Timestamp.class, new TimestampTypeAdapter())
+            .setDateFormat("yyyy-MM-dd HH:mm:ss").create();
     this.PATH_BaseTaskType = this.zkManager.getRootPath() + "/baseTaskType";
-    
-    //创建调度任务类型zookeeper节点
-    if(this.getZookeeper().exists(this.PATH_BaseTaskType, false) == null){
-      ZKTools.createPath(getZookeeper(), this.PATH_BaseTaskType, CreateMode.PERSISTENT, this.zkManager.getAcl());
+
+    // 创建调度任务类型zookeeper节点
+    if (this.getZookeeper().exists(this.PATH_BaseTaskType, false) == null) {
+      ZKTools.createPath(getZookeeper(), this.PATH_BaseTaskType, CreateMode.PERSISTENT,
+          this.zkManager.getAcl());
     }
-    
+
     localBaseTime = System.currentTimeMillis();
-    //创建一个临时目录
-    String tempPath = this.zkManager.getZookeeper().create(this.zkManager.getRootPath() + "/systime", null, this.zkManager.getAcl(), CreateMode.EPHEMERAL_SEQUENTIAL);
+    // 创建一个临时目录
+    String tempPath =
+        this.zkManager.getZookeeper().create(this.zkManager.getRootPath() + "/systime", null,
+            this.zkManager.getAcl(), CreateMode.EPHEMERAL_SEQUENTIAL);
     Stat tempStat = this.zkManager.getZookeeper().exists(tempPath, false);
-    //得到zk当前时间
+    // 得到zk当前时间
     zkBaseTime = tempStat.getCtime();
-    //删除该临时节点
+    // 删除该临时节点
     ZKTools.deleteTree(getZookeeper(), tempPath);
-    //如果zk时间
-    if(Math.abs(this.zkBaseTime - this.localBaseTime) > 5000){
-      log.error("请注意，Zookeeper服务器时间与本地时间相差 ： " + Math.abs(this.zkBaseTime - this.localBaseTime) +" ms");
+    // 如果zk时间
+    if (Math.abs(this.zkBaseTime - this.localBaseTime) > 5000) {
+      log.error("请注意，Zookeeper服务器时间与本地时间相差 ： " + Math.abs(this.zkBaseTime - this.localBaseTime)
+          + " ms");
     }
   }
-  
-  public ZooKeeper getZookeeper() throws Exception{
-     return this.zkManager.getZookeeper();
+
+  public ZooKeeper getZookeeper() throws Exception {
+    return this.zkManager.getZookeeper();
   }
-  
+
   public void createBaseTaskType(ScheduleTaskType baseTaskType) throws Exception {
-   if(baseTaskType.getBaseTaskType().indexOf("$") > 0){
+    if (baseTaskType.getBaseTaskType().indexOf("$") > 0) {
       throw new Exception("调度任务" + baseTaskType.getBaseTaskType() + "名称不能包含特殊字符$");
+    }
+
+    String zkPath = this.PATH_BaseTaskType + "/" + baseTaskType.getBaseTaskType();
+    String valueString = this.gson.toJson(baseTaskType);
+
+    // 判断是否存在节点
+    if (this.getZookeeper().exists(zkPath, false) == null) {
+      this.getZookeeper().create(zkPath, valueString.getBytes(), this.zkManager.getAcl(),
+          CreateMode.PERSISTENT);
+    } else {
+      throw new Exception("调度任务" + baseTaskType.getBaseTaskType()
+          + "已经存在,如果确认需要重建，请先调用deleteTaskType(String baseTaskType)删除");
+    }
+  }
+
+
+  public void updateBaseTaskType(ScheduleTaskType baseTaskType) throws Exception {
+   if(baseTaskType.getBaseTaskType().indexOf("$") > 0){
+     throw new Exception("调度任务" + baseTaskType.getBaseTaskType() +"名称不能包括特殊字符 $");
    }
 
-   String zkPath = this.PATH_B
+   String zkPath = this.PATH_BaseTaskType + "/" + baseTaskType.getBaseTaskType();
+   String valueString = this.gson.toJson(baseTaskType);
+   if( this.getZookeeper().exists(zkPath, false) == null ){
+     this.getZookeeper().create(zkPath, valueString.getBytes(), this.zkManager.getAcl(),CreateMode.PERSISTENT);
+   }else{
+     this.getZookeeper().setData(zkPath, valueString.getBytes(), -1);
+   }
+   
+  }
+  
+  public void initialRunningInfo4Dynamic(String baseTaskType, String ownSign) throws Exception {
+   String taskType = ScheduleUtil.getTaskTypeByBaseAndOwnSign(baseTaskType, ownSign);
+   //清除所有的老信息，只有leader能执行此操作
+   String zkPath = this.PATH_BaseTaskType + "/" + baseTaskType + "/" + taskType;
+   if(this.getZookeeper().exists(zkPath, false) == null){
+     this.getZookeeper().create(zkPath,null, this.zkManager.getAcl(),CreateMode.PERSISTENT);
+ }
+
   }
 
   
@@ -189,10 +234,6 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
   }
 
 
-  public void updateBaseTaskType(ScheduleTaskType baseTaskType) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
 
   public List<ScheduleTaskTypeRunningInfo> getAllTaskTypeRunningInfo(String baseTaskType)
       throws Exception {
@@ -245,10 +286,7 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
 
   }
 
-  public void initialRunningInfo4Dynamic(String baseTaskType, String ownSign) throws Exception {
-    // TODO Auto-generated method stub
 
-  }
 
   public boolean isInitialRunningInfoSucuss(String baseTaskType, String ownSign) throws Exception {
     // TODO Auto-generated method stub
@@ -283,24 +321,25 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
 
 }
 
+
 /**
  * 
- * @Title :日期序 列化/解序列化 实用工具类 
+ * @Title :日期序 列化/解序列化 实用工具类
  * @author gaojy
  * @INFO ： http://blog.csdn.net/itlwc/article/details/38454867
  * @Create_Date : 2017年8月24日上午11:02:31
  * @Update_Date :
  */
-class TimestampTypeAdapter implements JsonSerializer<Timestamp>,JsonDeserializer<Timestamp>{
+class TimestampTypeAdapter implements JsonSerializer<Timestamp>, JsonDeserializer<Timestamp> {
 
   public Timestamp deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
       throws JsonParseException {
-   if(!(json instanceof JsonPrimitive)){
-     throw new JsonParseException("日期应该是一个String值");
-   }
+    if (!(json instanceof JsonPrimitive)) {
+      throw new JsonParseException("日期应该是一个String值");
+    }
     try {
       DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-      Date data = (Date)format.parse(json.getAsString());
+      Date data = (Date) format.parse(json.getAsString());
       return new Timestamp(data.getTime());
     } catch (Exception e) {
       throw new JsonParseException(e);
@@ -312,6 +351,6 @@ class TimestampTypeAdapter implements JsonSerializer<Timestamp>,JsonDeserializer
     String dateFormatAsString = format.format(new Date(src.getTime()));
     return new JsonPrimitive(dateFormatAsString);
   }
-  
- 
+
+
 }
