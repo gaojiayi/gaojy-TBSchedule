@@ -122,6 +122,8 @@ public abstract class TBScheduleManager implements IStrategyTask{
 	log.info("create TBScheduleManager for taskType:" + baseTaskType);
 	//清除已经过期1天的TASK，OWN_SING的组合。超过一天没有活动的server视为过期
 	this.scheduleCenter.clearExpireTaskTypeRunningInfo(baseTaskType,ScheduleUtil.getLocalIP() + "清除过期OWN_SIGN信息",this.taskTypeInfo.getExpireOwnSignInterval());
+	
+	Object dealBean = aFactory.getBean(this.taskTypeInfo.getDealBeanName());
 }
   
   

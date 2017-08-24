@@ -9,6 +9,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import com.hpe.pamirs.schedule.hpeschedule.taskmanager.IScheduleDataManager;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
 /**
  * Title: 调度服务器构造器
@@ -30,9 +31,19 @@ public class TBScheduleManagerFactory implements ApplicationContextAware{
 	
 	private int timeInterval = 2000;
 	
+	/**
+	 * ManagerFactoryTimerTask上次执行的时间戳</br>
+	 * zk环境不稳定，可能导致所有task自循环丢失，调度停止</br>
+	 * 外层应用，通过jmx暴露心跳时间，监控这个tbschedule最重要的大循环</br>
+	 */
 	public volatile long timerTaskHeartBeatTS = System.currentTimeMillis();
 	
+	/**
+	 * 调度配置中心客户端
+	 */
 	private IScheduleDataManager scheduleDataManager;
+	private ScheduleStrategyDataManager4ZK scheduleStrategyManager;
+	
 	public void setApplicationContext(ApplicationContext arg0) throws BeansException {
 		// TODO Auto-generated method stub
 		
