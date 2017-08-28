@@ -52,4 +52,29 @@ public class ScheduleUtil {
       return OWN_SIGN_BASE;
     }
   }
+  
+  /**
+   * 分配任务数量
+   * @param serverNum 总的服务器数量
+   * @param taskItemNum  任务项数量
+   * @param maxNumOfOneServer 每个server最大任务项数目
+   * @return
+   */
+  public static int[] assignTaskNumber(int serverNum,int taskItemNum,int maxNumOfOneServer){
+	 int[] taskNums = new int[serverNum];
+	 int numOfSingle = taskItemNum / serverNum; 
+	 int otherNum = taskItemNum % serverNum;
+	 
+	 //20150323删除，任务分片保证分配到所有的线程组上
+	 for(int i = 0;i < taskNums.length;i++){
+		 //taskNums.length  一定大于  otherNum
+		 if( i < otherNum){
+			 taskNums[i] = numOfSingle + 1;
+		 }else{
+			 taskNums[i] = numOfSingle;
+		 }
+	 }
+	  return taskNums; 
+  }
+  
 }

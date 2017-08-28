@@ -488,10 +488,41 @@ public class ScheduleDataManager4ZK implements IScheduleDataManager {
 	 */
 	public void assignTaskItem(String taskType, String currentUuid,
 			int maxNumOfOneServer, List<String> taskServerList) throws Exception {
-		if(this.isLeader(currentUuid, serverList)){
-			
+		if(this.isLeader(currentUuid, taskServerList) == false){
+			if(log.isDebugEnabled()){
+				log.debug(currentUuid + ":不是负责任务分配的leader，直接返回");
+			}
+			return;
 		}
+		if(log.isDebugEnabled()){
+			log.debug(currentUuid + ":开始重新分配任务...."); 
+		}
+		if(taskServerList.size() <= 0){
+			//在服务器动态调整的时候，可能出现服务器列表为空的清空
+			return;
+		}
+		String baseTaskType = ScheduleUtil.splitBaseTaskTypeFromType(taskType);
+		String zkPath = this.PATH_BaseTaskType + "/" + baseTaskType +
+				"/" + taskType + "/" + this.PATH_TaskItem;
+		List<String> children = this.getZookeeper().getChildren(zkPath, false);
+//		 Collections.sort(children);
+//	     20150323 有些任务分片，业务方其实是用数字的字符串排序的。优先以数字进行排序，否则以字符串排序
+		Collections.sort(children,new Comparator<String>() {
 
+			public int compare(String o1, String o2) {
+				if(StringUtils.isNumeric(o1) && StringUtils.isNumeric(o2))
+					return Integer.parseInt(o1) - Integer.parseInt(o2);
+				return o1.compareTo(o2);
+			}
+		});
+		int unModifyCount = 0;
+		int[] taskNums = ScheduleUtil.assignTaskNumber(taskServerList.size(), children.size(), maxNumOfOneServer);
+		int point = 0;
+		int count = 0;
+		String NO_SERVER_DEAL = "没有分配到服务器";
+		for(int i = 0; i < children.size();i++){
+			.
+		}
 	}
 
 	public boolean refreshScheduleServer(ScheduleServer server)
