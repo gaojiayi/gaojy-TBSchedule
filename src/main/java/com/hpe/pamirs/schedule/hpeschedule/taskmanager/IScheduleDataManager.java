@@ -203,7 +203,7 @@ public interface IScheduleDataManager {
   * @param taskItem
   * @throws Exception
   */
- public void deleteScheduletaskItem(String taskType,String taskItem) throws Exception;
+ public void deleteScheduleTaskItem(String taskType,String taskItem) throws Exception;
 
  public void initialRunningInfo4Static(String baseTaskType,String ownSign,String uuid) throws Exception;
  
