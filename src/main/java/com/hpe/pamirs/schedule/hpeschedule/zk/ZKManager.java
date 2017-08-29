@@ -74,7 +74,9 @@ public class ZKManager {
 
   private void connect() throws Exception {
     CountDownLatch connectionLatch = new CountDownLatch(1);
+    
     createZookeeper(connectionLatch);
+    //保证正确连接后（执行回调）  继续执行
     connectionLatch.await(10, TimeUnit.SECONDS);
   }
 

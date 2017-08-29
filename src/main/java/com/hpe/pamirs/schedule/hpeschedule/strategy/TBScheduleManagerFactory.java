@@ -20,6 +20,7 @@ import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.IScheduleDataManager;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleStrategyDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
+import com.taobao.pamirs.schedule.strategy.InitialThread;
 
 /**
  * Title: 调度服务器构造器
@@ -91,12 +92,24 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
 	 * @throws Exception
 	 */
 	public void init(Properties p) throws Exception{
+		//先停止初始化线程
 		if(this.initialThread != null){
 			this.initialThread.stopThread();
 		}
 		this.lock.lock();
 		try{
-			
+			this.scheduleDataManager = null;
+			this.scheduleStrategyManager = null;
+			ConsoleManager.setScheduleManagerFactory(this);
+			if(this.zkManager != null){
+				this.zkManager.close();
+			}
+			this.zkManager = new ZKManager(p);
+			this.errorMesage = "Zookeeper connecting ......"
+					+ this.zkManager.getConnectStr();
+			initialThread = new InitialThread(this);
+			initialThread.setName("TBScheduleManagerFactory-initialThread");
+			initialThread.start();
 		}finally{
 			this.lock.unlock();
 		}
@@ -150,5 +163,11 @@ class InitialThread extends Thread{
 	public void stopThread(){
 		this.isStop = true;
 	}
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		super.run();
+	}
+	
 }
 
