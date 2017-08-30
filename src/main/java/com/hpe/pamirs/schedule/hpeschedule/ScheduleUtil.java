@@ -2,6 +2,8 @@ package com.hpe.pamirs.schedule.hpeschedule;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 /**
  * 
  * @Title :解析任务类型  IP  工具类
@@ -52,6 +54,11 @@ public class ScheduleUtil {
       return OWN_SIGN_BASE;
     }
   }
+  
+  public static String transferDataToString(Date d){
+    SimpleDateFormat DATA_FORMAT_yyyyMMddHHmmss = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    return DATA_FORMAT_yyyyMMddHHmmss.format(d);
+}
   
   /**
    * 分配任务数量

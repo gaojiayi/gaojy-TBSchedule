@@ -1,7 +1,14 @@
 package com.hpe.pamirs.schedule.hpeschedule.strategy;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-
+/**
+ * 
+ * @Title :执行taskName的调度策略，比如机器数
+ * @author gaojy
+ *
+ * @Create_Date : 2017年8月30日上午10:25:16
+ * @Update_Date :
+ */
 public class ScheduleStrategy {
 
 	public enum Kind{Schedule,Java,Bean}
