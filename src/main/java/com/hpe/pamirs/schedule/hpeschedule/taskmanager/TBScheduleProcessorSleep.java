@@ -38,8 +38,29 @@ public class TBScheduleProcessorSleep<T> implements IScheduleProcessor,Runnable 
    */
   protected IScheduleTaskDeal<T> taskDealBean;
  
-  protected long taskListVersion
+  /**
+   * 当前任务队列的版本号
+   */
+  protected long taskListVersion = 0;
   
+  final Object lockVersionObject = new Object();
+  final Object lockRunningList = new Object();
+  
+  protected List<T> taskList = new CopyOnWriteArrayList<T>();
+  
+  /**
+   * 是否可以批处理
+   */
+  boolean isMutilTask = false;
+  
+  /**
+   * 是否已经获得终止调度信号
+   */
+  boolean isStopSchedule = false;
+  
+  boolean isSleep = false;
+  
+  StatisticsInfo statisticsInfo;
   public void run() {
     
   }
