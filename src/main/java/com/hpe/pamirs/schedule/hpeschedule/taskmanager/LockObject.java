@@ -49,4 +49,13 @@ public class LockObject {
       return m_threadCount;
     }
   }
+  
+	public void notifyOtherThread() throws Exception {
+		synchronized (m_waitOnObject) {
+			// System.out.println(Thread.currentThread().getName() + ":" +
+			// "唤醒所有等待线程");
+			this.m_waitOnObject.notifyAll();
+		}
+	}
+
 }

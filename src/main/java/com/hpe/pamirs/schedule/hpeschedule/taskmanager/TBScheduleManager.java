@@ -22,6 +22,7 @@ import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 import com.hpe.pamirs.schedule.hpeschedule.strategy.IStrategyTask;
 import com.hpe.pamirs.schedule.hpeschedule.strategy.TBScheduleManagerFactory;
+import com.taobao.pamirs.schedule.taskmanager.ScheduleTaskType;
 
 /**
  * 
@@ -331,6 +332,10 @@ public abstract class TBScheduleManager implements IStrategyTask {
 		}
 	}
 
+	public ScheduleTaskType getTaskTypeInfo() {
+		return taskTypeInfo;
+	}	
+	
 	/**
 	 * 超过运行的运行时间，暂时停止调度
 	 * 

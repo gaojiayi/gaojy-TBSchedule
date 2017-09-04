@@ -1,5 +1,6 @@
 package com.hpe.pamirs.schedule.hpeschedule.taskmanager;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -7,6 +8,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDeal;
+import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDealSingle;
 
 /**
  * 任务调度器,在TBScheduleManager的管理下实现多线程数据处理
@@ -58,31 +60,141 @@ public class TBScheduleProcessorSleep<T> implements IScheduleProcessor,Runnable 
    */
   boolean isStopSchedule = false;
   
-  boolean isSleep = false;
+  boolean isSleeping = false;
   
   StatisticsInfo statisticsInfo;
+  
+  public TBScheduleProcessorSleep(TBScheduleManager aManager,
+	IScheduleTaskDeal<T> aTaskDealBean,StatisticsInfo aStatisticsInfo ){
+	  this.scheduleManager = aManager;
+	  this.statisticsInfo = aStatisticsInfo;
+	  this.taskTypeInfo = this.scheduleManager.getTaskTypeInfo();
+	  this.taskDealBean = aTaskDealBean;
+	  if(this.taskDealBean instanceof IScheduleTaskDealSingle<?>){
+		  if(taskTypeInfo.getExecuteNumber() > 1){
+			  taskTypeInfo.setExecuteNumber(1);
+		  }
+		  isMutilTask = false;
+	  }else{
+		  isMutilTask = true;
+	  }
+	  if(taskTypeInfo.getFetchDataNumber() < taskTypeInfo.getThreadNumber() * 10){
+		  logger.warn("参数设置不合理，系统性能不佳。[每次从数据库获取的数量fetchnum] >= [线程数量threadnum] *[最少循环次数10]");
+	  }
+	  for(int i = 0;i < taskTypeInfo.getThreadNumber();i++){
+		  this.st(i);
+	  }
+  }
+  
+
   public void run() {
+	  try {
+		long startTime = 0;
+		while(true){
+			this.m_lockObject.addThread();
+			Object executeTask;
+			while(true){
+				if(this.isStopSchedule == true){ //停止队列调度
+					this.m_lockObject.realseThread();
+					this.m_lockObject.notifyOtherThread();//通知所有的休眠线程
+					synchronized (this.threadList) {
+						this.threadList.remove(Thread.currentThread());
+						if(this.threadList.size() == 0){
+							this.scheduleManager.unRegisterScheduleServer();
+						}
+					}
+					return;
+				}
+				
+				//加载调度任务
+				if(!this.isMutilTask){
+					executeTask = this.getScheduleTaskId();
+				}else{
+					executeTask = this.getScheduleTaskIdMulti();
+				}
+				
+				if(executeTask == null){
+					break;
+				}
+				
+				try {//运行相关的程序
+					startTime = scheduleManager.scheduleCenter.getSystemTime();
+					
+					
+				} catch (Exception e) {
+					// TODO: handle exception
+				}
+				
+			}
+		}
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
     
   }
 
   public boolean isDealFinishAllData() {
-    // TODO Auto-generated method stub
-    return false;
+    return this.taskList.size() == 0;
   }
 
   public boolean isSleeping() {
-    // TODO Auto-generated method stub
-    return false;
+    return this.isSleeping;
   }
 
+  /**
+   * 需要注意的是，调用服务器从配置中心注册的工作，必须在所有线程退出的情况下才能做
+   */
   public void stopSchedule() throws Exception {
-    // TODO Auto-generated method stub
-    
+    // 设置停止调度的标志，调度线程发现这个标志，执行完当前任务后，就退出调度
+	  this.isStopSchedule = true;
+	  //清除所有未处理任务，但已经进入处理队列，需要处理完毕
+      this.taskList.clear();
   }
 
   public void clearAllHasFetchData() {
-    // TODO Auto-generated method stub
-    
+    this.taskList.clear();
+  }
+  
+  private void startThread(int index){
+	  Thread thread = new Thread(this);
+	  threadList.add(thread);
+	  String threadName = this.scheduleManager.getScheduleServer().getTaskType()
+			  + "-" + this.scheduleManager.getCurrentSerialNumber() + "-exe" + index;
+	  thread.setName(threadName);
+	  thread.start();
   }
 
+  public synchronized Object getScheduleTaskId(){
+	  if(this.taskList.size() > 0)
+		  return this.taskList.remove(0);
+	  return null;
+  }
+  
+  public synchronized Object[] getScheduleTaskIdMulti(){
+	  if(this.taskList.size() == 0){
+		  return null;
+	  }
+	  int size = taskList.size() > taskTypeInfo.getExecuteNumber()? taskTypeInfo.getExecuteNumber()
+			 : taskList.size() ;
+	  Object[]  result = null;
+	  if(size > 0){
+		  result = (Object[])Array.newInstance(this.taskList.get(0).getClass(), size);
+	  }
+	  for(int i = 0; i < size ;i++){
+		  result[i] = this.taskList.remove(0);
+	  }
+	  return result;
+  }
+  
+  protected int loadScheduleData(){
+	  try {
+		//在每次数据处理完毕后休眠固定的时间
+		  if(this.taskTypeInfo.getSleepTimeInterval() > 0){
+			  
+		  }
+		  
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
+  }
 }
