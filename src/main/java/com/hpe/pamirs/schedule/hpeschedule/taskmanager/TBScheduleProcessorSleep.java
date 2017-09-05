@@ -1,6 +1,8 @@
 package com.hpe.pamirs.schedule.hpeschedule.taskmanager;
 
 import java.lang.reflect.Array;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -8,7 +10,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDeal;
+import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDealMulti;
 import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDealSingle;
+import com.hpe.pamirs.schedule.hpeschedule.TaskItemDefine;
 
 /**
  * 任务调度器,在TBScheduleManager的管理下实现多线程数据处理
@@ -81,8 +85,9 @@ public class TBScheduleProcessorSleep<T> implements IScheduleProcessor,Runnable 
 	  if(taskTypeInfo.getFetchDataNumber() < taskTypeInfo.getThreadNumber() * 10){
 		  logger.warn("参数设置不合理，系统性能不佳。[每次从数据库获取的数量fetchnum] >= [线程数量threadnum] *[最少循环次数10]");
 	  }
+	  //启动taskTypeInfo.getThreadNumber()个线程
 	  for(int i = 0;i < taskTypeInfo.getThreadNumber();i++){
-		  this.st(i);
+		  this.startThread(i);
 	  }
   }
   
@@ -119,16 +124,83 @@ public class TBScheduleProcessorSleep<T> implements IScheduleProcessor,Runnable 
 				
 				try {//运行相关的程序
 					startTime = scheduleManager.scheduleCenter.getSystemTime();
+					if(!this.isMutilTask){
+					  if(((IScheduleTaskDealSingle) this.taskDealBean).execute(executeTask, scheduleManager.getScheduleServer().getOwnSign()) == true){
+					     addSuccessNum(1,scheduleManager.scheduleCenter.getSystemTime()
+					         - startTime,"com.taobao.pamris.schedule.TBScheduleProcessorSleep.run");
+					  }else{
+					    addFailNum(1,scheduleManager.scheduleCenter.getSystemTime()
+					        - startTime,"com.taobao.pamirs.schedule.TBScheduleProcessorSleep.run");
+					  }
+					  
+					}else{//批任务处理
+					  if(((IScheduleTaskDealMulti) this.taskDealBean).execute((Object[]) executeTask,
+					      scheduleManager.getScheduleServer().getOwnSign()) == true){
+					    addSuccessNum(((Object[]) executeTask).length,
+					        scheduleManager.scheduleCenter.getSystemTime() - startTime,
+					        "com.taobao.pamirs.schedule.TBScheduleProcessorSleep.run");
+					  }else{
+					    addFailNum(((Object[]) executeTask).length,scheduleManager.scheduleCenter.getSystemTime()
+                            - startTime,
+                            "com.taobao.pamirs.schedule.TBScheduleProcessorSleep.run");
+					  }
+					}
 					
-					
-				} catch (Exception e) {
-					// TODO: handle exception
+				} catch (Exception ex) {
+				  if (this.isMutilTask == false) {
+                    addFailNum(1,scheduleManager.scheduleCenter.getSystemTime()- startTime,
+                            "TBScheduleProcessor.run");
+                } else {
+                    addFailNum(((Object[]) executeTask).length, scheduleManager.scheduleCenter.getSystemTime()
+                            - startTime,
+                            "TBScheduleProcessor.run");
+                }
+                logger.warn("Task :" + executeTask + " 处理失败", ex);
 				}
 				
 			}
+			
+			//当前队列中所有的任务都已经完成
+			if(logger.isTraceEnabled()){
+			  logger.trace(Thread.currentThread().getName() + ":当前运行线程数量：" + this.m_lockObject.count());
+			}
+			if(this.m_lockObject.realseThreadButNotLast() == false){
+			  int size = 0;
+			  Thread.currentThread().sleep(100);
+			  startTime = scheduleManager.scheduleCenter.getSystemTime();
+			  //装载数据
+			  size = this.loadScheduleData();
+			  if(size > 0){
+			    this.m_lockObject.notifyOtherThread();
+			  }else{
+			    //判断当没有数据的时候，是否需要退出调度
+			    if(this.isStopSchedule == false && this.scheduleManager.isContinueWhenData() == true){//继续执行
+			      if(logger.isTraceEnabled()){
+			          logger.trace("没有装载到数据，start sleep");
+			      }
+			      this.isSleeping = true;
+			      Thread.currentThread().sleep(this.scheduleManager.getTaskTypeInfo().getSleepTimeNoData());
+			      this.isSleeping = false;
+			      
+			      if(logger.isTraceEnabled()){
+			        logger.trace("sleep end");
+			      }
+			    }else{
+			      //没有数据，退出调度，唤醒所有沉睡的线程
+			      this.m_lockObject.notifyOtherThread();
+			    }
+			  }
+			  this.m_lockObject.realseThread();
+			}else{
+			    if(logger.isTraceEnabled()){
+			      logger.trace("不是最后一个线程，sleep");
+			    }
+			    this.m_lockObject.waitCurrentThread();
+			}
+		
 		}
 	} catch (Exception e) {
-		// TODO: handle exception
+	  logger.error(e.getMessage(), e);
 	}
     
   }
@@ -190,11 +262,64 @@ public class TBScheduleProcessorSleep<T> implements IScheduleProcessor,Runnable 
 	  try {
 		//在每次数据处理完毕后休眠固定的时间
 		  if(this.taskTypeInfo.getSleepTimeInterval() > 0){
+			  if(logger.isTraceEnabled()){
+			    logger.trace("处理完一批数据后休眠:" + this.taskTypeInfo.getSleepTimeInterval());
+			  }
+			  this.isSleeping = true;
+			  Thread.sleep(taskTypeInfo.getSleepTimeInterval());
+			  this.isSleeping = false;
 			  
+			  if(logger.isTraceEnabled()){
+			    logger.trace("处理完一批数据后休眠后恢复");
+			  }
 		  }
-		  
-	} catch (Exception e) {
-		// TODO: handle exception
+	List<TaskItemDefine> taskItems  =  this.scheduleManager.getCurrentScheduleTaskItemList();
+	//根据队列信息查询需要调度的数据，然后增加到任务列表中
+	  if(taskItems.size() > 0 ){
+	    List<TaskItemDefine> tmpTaskList = new ArrayList<TaskItemDefine>();
+	    synchronized(taskItems){
+	      for(TaskItemDefine taskItemDefine : taskItems){
+	        tmpTaskList.add(taskItemDefine);
+	      }
+	    }
+	    
+	    List<T> tmpList = this.taskDealBean
+	        .selectTask(taskTypeInfo.getTaskParameter(),
+	            scheduleManager.getScheduleServer().getOwnSign(),
+	            this.scheduleManager.gettaskItemCount(), tmpTaskList, 
+	            taskTypeInfo.getFetchDataNumber());
+	    scheduleManager.getScheduleServer().setLastFetchDataTime(new Timestamp(scheduleManager.scheduleCenter.getSystemTime()));
+	  
+	    if(tmpList != null){
+	      this.taskList.addAll(tmpList);
+	    }
+	  }else{
+	    if(logger.isTraceEnabled()){
+          logger.trace("没有获取到需要处理的数据队列");
+	      }
+	  }
+	  addFetchNum(taskList.size(), "TBScheduleProcessor.loadScheduleData");
+	  return this.taskList.size();
+	  } catch (Throwable ex) {
+	    logger.error("Get tasks error.", ex);
 	}
+	  return 0;
   }
+  
+  
+  public void addFetchNum(long num,String addr){
+    this.statisticsInfo.addFetchDataCount(1);
+    this.statisticsInfo.addFetchDataNum(num);
+  }
+  
+  public void addSuccessNum(long num,long spendTime,String addr){
+    this.statisticsInfo.addDealDataSucess(num);
+    this.statisticsInfo.addDealSpendTime(spendTime);
+  }
+  
+  public void addFailNum(long num,long spendTime,String addr){
+    this.statisticsInfo.addDealDataFail(num);
+    this.statisticsInfo.addDealSpendTime(spendTime);
+  }
+  
 }
