@@ -16,8 +16,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import com.hpe.pamirs.schedule.hpeschedule.ConsoleManager;
 import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.IScheduleDataManager;
+import com.hpe.pamirs.schedule.hpeschedule.taskmanager.TBScheduleManagerStatic;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleStrategyDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
