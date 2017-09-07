@@ -17,6 +17,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 import com.hpe.pamirs.schedule.hpeschedule.ConsoleManager;
+import com.hpe.pamirs.schedule.hpeschedule.IScheduleTaskDeal;
 import com.hpe.pamirs.schedule.hpeschedule.ScheduleUtil;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.IScheduleDataManager;
 import com.hpe.pamirs.schedule.hpeschedule.taskmanager.TBScheduleManagerStatic;
@@ -61,7 +62,6 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
   private String hostName;
 
   private Timer timer;
-
 
   /**
    * ManagerFactoryTimerTask上次执行的时间戳</br> zk环境不稳定，可能导致所有task自循环丢失，调度停止</br>
@@ -158,18 +158,96 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
         String baseTaskType = ScheduleUtil.splitBaseTaskTypeFromType(strategy.getTaskName());
         String ownSign = ScheduleUtil.splitOwnsignFromTaskType(strategy.getTaskName());
         result = new TBScheduleManagerStatic(this, baseTaskType, ownSign, scheduleDataManager);
+      }else if(ScheduleStrategy.Kind.Java == strategy.getKind()){
+        result = (IStrategyTask)Class.forName(strategy.getTaskName()).newInstance();
+        result.initialTaskParameter(strategy.getStrategyName(), strategy.getTaskParameter());
+      }else if(ScheduleStrategy.Kind.Bean == strategy.getKind()){
+        result = (IStrategyTask)this.getBean(strategy.getTaskName());
+        result.initialTaskParameter(strategy.getStrategyName(), 
+                         strategy.getTaskParameter());
       }
     } catch (Exception e) {
-      logger.error("");
+      logger.error("strategy 获取对应的java or bean 出错,schedule并没有加载该任务,请确认" +strategy.getStrategyName(),e);
+    }
+    return result;
+  }
+
+  public void refresh() throws Exception{
+    this.lock.lock();
+    try {
+      //判断状态是否终止
+      ManagerFactoryInfo stsInfo = null;
+      boolean isException = false;
+      try {
+        stsInfo = this.getScheduleStrategyManager().loadManagerFactoryInfo(this.getUuid());
+      } catch (Exception e) {
+        isException = true;
+        logger.error("获取服务器信息有误：uuid=" + this.getUuid(),e);
+      }
+      
+      if(isException == true){
+        
+      }else if(){
+        
+      }else{
+        
+      }
+      
+    } finally{
+      // TODO: handle exception
     }
   }
-
-
-  public void setApplicationContext(ApplicationContext arg0) throws BeansException {
-
-
+  
+  public void reRegisterManagerFactory() throws Exception{
+    //重新分配调度器
+    List<String> stopList = this.getScheduleStrategyManager().registerManagerFactory(this);
+  }
+  
+  /**
+   * 重启所有的服务
+   * @throws Exception
+   */
+  public void reStart() throws  Exception{
+    try {
+      if(this.timer != null){
+        
+      }
+    } catch (Exception e) {
+      // TODO: handle exception
+    }
+  }
+  
+  public boolean isZookeeperInitialSuccess() throws Exception{
+    return this.zkManager.checkZookeeperState();
+  }
+  
+  public String[] getScheduleTaskDealList(){
+    return applicationcontext.getBeanNamesForType(IScheduleTaskDeal.class);
+  }
+  
+  public IScheduleDataManager getScheduleDataManager(){
+    if(this.scheduleDataManager == null){
+      throw new RuntimeException(this.errorMesage);
+    }
+    return scheduleDataManager;
+  }
+  
+  public ScheduleStrategyDataManager4ZK getScheduleStrategyManager(){
+    if(this.scheduleDataManager == null){
+      throw new RuntimeException(this.errorMesage);
+    }
+    return scheduleStrategyManager; 
+  }
+  
+  
+  public void setApplicationContext(ApplicationContext aApplicationcontext) throws BeansException {
+        applicationcontext = aApplicationcontext;
   }
 
+  public ZKManager getZkManager() {
+    return this.zkManager;
+ }
+  
   public String getUuid() {
     return uuid;
   }
@@ -202,6 +280,9 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
     return applicationcontext.getBean(beanName);
   }
   
+  public Map<String,String> getZkConfig() {
+    return zkConfig;
+  }
 }
 
 
@@ -225,8 +306,22 @@ class ManagerFactoryTimerTask extends TimerTask {
   public void run() {
     try {
       Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-    } catch (Exception e) {
-      // TODO: handle exception
+      if(this.factory.zkManager.checkZookeeperState() == false){
+        if(count > 5){
+          log.error("Zookeeper连接失败，关闭所有的任务后，重新连接Zookeeper服务器......");
+          this.factory.reStart();
+        }else{
+          count = count + 1;
+        }
+        
+      }else{
+        count = 0;
+        this.factory.refresh();
+      }
+    } catch (Exception ex) {
+        log.error(ex.getMessage(),ex);
+    }finally{
+      factory.timerTaskHeartBeatTS = System.currentTimeMillis();
     }
 
   }
@@ -236,11 +331,11 @@ class ManagerFactoryTimerTask extends TimerTask {
 
 class InitialThread extends Thread {
   private static transient Log log = LogFactory.getLog(InitialThread.class);
-  TBScheduleManagerFactory factory;
+  TBScheduleManagerFactory facotry;
   boolean isStop = false;
 
   public InitialThread(TBScheduleManagerFactory aFactory) {
-    this.factory = aFactory;
+    this.facotry = aFactory;
   }
 
   public void stopThread() {
@@ -249,8 +344,28 @@ class InitialThread extends Thread {
 
   @Override
   public void run() {
-    // TODO Auto-generated method stub
-    super.run();
+    facotry.lock.lock();
+    try {
+      int count = 0;
+      while(facotry.zkManager.checkZookeeperState() == false){
+        count = count + 1;
+        if(count % 50 == 0){
+          facotry.errorMesage= "Zookeeper connecting ......" 
+              + facotry.zkManager.getConnectStr() + " spendTime:" + count * 20 +"(ms)";
+          log.error(facotry.errorMesage);
+        }
+        Thread.sleep(20);
+        if(this.isStop)
+          return ;
+      }
+      
+      //已初始化zk后初始化数据
+      facotry.initialData();
+    } catch (Exception e) {
+      log.error(e.getMessage(),e);
+    }finally{
+      facotry.lock.unlock();
+    }
   }
 
 }
