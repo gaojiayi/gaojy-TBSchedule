@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.spi.LoggerFactory;
+import org.apache.zookeeper.ZooKeeper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -201,7 +202,104 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
   public void reRegisterManagerFactory() throws Exception{
     //重新分配调度器
     List<String> stopList = this.getScheduleStrategyManager().registerManagerFactory(this);
+    for(String strategyName : stopList){
+      this.stopServer(strategyName);
+    }
+    this.assignScheduleServer();
+    
   }
+  
+  /**
+   * 根据策略重新分配调度任务的机器
+   * @throws Exception
+   */
+  public void assignScheduleServer() throws Exception{
+    
+  }
+  
+  public boolean isLeader(String uuid,List<ScheduleStrategyRunntime> factoryList){
+    return start;
+    
+  }
+  
+  /**
+   * 终止一类任务，如果为null，终止所有任务
+   * @param strategyName
+   * @throws Exception
+   */
+  public void stopServer(String strategyName) throws Exception{
+    if(strategyName == null){
+      String[] nameList = this.managerMap.keySet().toArray(new String[0]);
+      for(String name : nameList){
+        for(IStrategyTask task : this.managerMap.get(name)){
+          try {
+            task.stop(name);
+          } catch (Exception e) {
+            logger.error("注销任务错误：strategyName="+strategyName,e);
+          }
+        }
+        this.managerMap.remove(name);
+      }
+    }else{
+      List<IStrategyTask> list = this.managerMap.get(strategyName);
+      if(list != null){
+        for(IStrategyTask task : list){
+          try {
+            task.stop(strategyName);
+          } catch (Exception e) {
+            // TODO: handle exception
+          }
+        }
+        this.managerMap.remove(strategyName);
+      }
+    }
+  }
+  
+  
+  
+  /**
+   * 停止所有调度资源
+   * @throws Exception
+   */
+  public void stopAll() throws Exception{
+    try {
+      lock.lock();
+      this.start = false;
+      if(this.initialThread != null){
+        this.initialThread.stopThread();
+      }
+      if(this.timer != null){
+        if(this.timerTask != null){
+          this.timerTask.cancel();
+          this.timerTask = null;
+        }
+        this.timer.cancel();
+        this.timer = null;
+      }
+      this.stopServer(null);
+      if(this.zkManager != null){
+        this.zkManager.close();
+      }
+      
+      if(this.scheduleStrategyManager != null){
+        try {
+          ZooKeeper zk = this.scheduleStrategyManager.getZooKeeper();
+          if(zk != null){
+            zk.close();
+          }
+        } catch (Exception e) {
+          logger.error("stopAll zk getZookeeper异常！",e);
+        }
+      }
+      this.uuid  = null;
+     logger.info("stopAll 停止服务成功！");
+    } catch (Exception e) {
+      logger.info("stopAll 服务失败：" + e.getMessage(),e);
+    }finally{
+      lock.unlock();
+    }
+  }
+  
   
   /**
    * 重启所有的服务
@@ -210,10 +308,20 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
   public void reStart() throws  Exception{
     try {
       if(this.timer != null){
-        
+        if(this.timerTask != null){
+          this.timerTask.cancel();
+          this.timerTask = null;
+        }
+        this.timer.purge();
       }
+      this.stopServer(null);
+      if(this.zkManager != null){
+        this.zkManager.close();
+      }
+      this.uuid = null;
+      this.init();
     } catch (Exception e) {
-      // TODO: handle exception
+      logger.error("重启服务失败："+ e.getMessage(),e);
     }
   }
   
