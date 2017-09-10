@@ -1,5 +1,6 @@
 package com.hpe.pamirs.schedule.hpeschedule.strategy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -25,6 +26,7 @@ import com.hpe.pamirs.schedule.hpeschedule.taskmanager.TBScheduleManagerStatic;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleStrategyDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
+import com.taobao.pamirs.schedule.strategy.IStrategyTask;
 
 /**
  * Title: 调度服务器构造器 使用springcontext来初始化配置
@@ -214,12 +216,61 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
    * @throws Exception
    */
   public void assignScheduleServer() throws Exception{
+    for(ScheduleStrategyRunntime run : this.scheduleStrategyManager
+    		.loadAllScheduleStrategyRunntimeByUUID(this.uuid)){
+    List<ScheduleStrategyRunntime> factoryList =   this.scheduleStrategyManager
+    		.loadAllScheduleStrategyRunntimeByTaskType(run.getStrategyName());
     
+    
+    }
   }
   
-  public boolean isLeader(String uuid,List<ScheduleStrategyRunntime> factoryList){
-    return start;
-    
+  public boolean isLeader(String uuid,
+		  List<ScheduleStrategyRunntime> factoryList){
+    try {
+		long no = Long.parseLong(uuid.substring(uuid.lastIndexOf("$") + 1));
+		for(ScheduleStrategyRunntime server : factoryList){
+			if(no > Long.parseLong(server.getUuid().substring(
+					server.getUuid().lastIndexOf("$") + 1))){
+				return  false;
+			}
+		}
+    } catch (Exception e) {
+		logger.error("判断leader出错：uuif=" + uuid,e);
+		return true;
+	}   
+  }
+  
+  public void reRunScheduleServer() throws Exception{
+	  for(ScheduleStrategyRunntime run : this.scheduleStrategyManager.loadAllScheduleStrategyRunntimeByUUID(this.uuid)){
+		  List<IStrategyTask> list = this.managerMap.get(run.getStrategyName());
+	  if(list == null){
+		  list = new ArrayList<IStrategyTask>();
+		  this.managerMap.put(run.getStrategyName(), list);
+	  }
+	  
+	  while(list.size() > run.getRequestNum() && list.size() > 0){
+		  IStrategyTask task = list.remove(list.size() -1 );
+		  try {
+			task.stop(run.getStrategyName());
+		} catch (Exception e) {
+			logger.error("注销任务错误：strategyName=" + run.getStrategyName(), e);
+		}
+	  }
+	  
+	 //不足  增加调度器
+	  ScheduleStrategy strategy = this.scheduleStrategyManager
+			  .loadStrategy(run.getStrategyName());
+	  while(list.size() < run.getRequestNum()){
+		  IStrategyTask result = this.createStrategyTask(strategy);
+			if (null == result) {
+				logger.error("strategy 对应的配置有问题。strategy name="
+						+ strategy.getStrategyName());
+			}
+			list.add(result);	  
+	  }
+	  
+	  }
   }
   
   /**
