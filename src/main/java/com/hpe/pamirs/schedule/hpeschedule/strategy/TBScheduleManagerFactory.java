@@ -220,7 +220,10 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
     		.loadAllScheduleStrategyRunntimeByUUID(this.uuid)){
     List<ScheduleStrategyRunntime> factoryList =   this.scheduleStrategyManager
     		.loadAllScheduleStrategyRunntimeByTaskType(run.getStrategyName());
-    
+    if(factoryList.size() == 0 
+    		|| !this.isLeader(this.uuid, factoryList)){
+    	continue;
+    }
     
     }
   }
