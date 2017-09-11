@@ -26,7 +26,6 @@ import com.hpe.pamirs.schedule.hpeschedule.taskmanager.TBScheduleManagerStatic;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ScheduleStrategyDataManager4ZK;
 import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
-import com.taobao.pamirs.schedule.strategy.IStrategyTask;
 
 /**
  * Title: 调度服务器构造器 使用springcontext来初始化配置
@@ -161,143 +160,159 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
         String baseTaskType = ScheduleUtil.splitBaseTaskTypeFromType(strategy.getTaskName());
         String ownSign = ScheduleUtil.splitOwnsignFromTaskType(strategy.getTaskName());
         result = new TBScheduleManagerStatic(this, baseTaskType, ownSign, scheduleDataManager);
-      }else if(ScheduleStrategy.Kind.Java == strategy.getKind()){
-        result = (IStrategyTask)Class.forName(strategy.getTaskName()).newInstance();
+      } else if (ScheduleStrategy.Kind.Java == strategy.getKind()) {
+        result = (IStrategyTask) Class.forName(strategy.getTaskName()).newInstance();
         result.initialTaskParameter(strategy.getStrategyName(), strategy.getTaskParameter());
-      }else if(ScheduleStrategy.Kind.Bean == strategy.getKind()){
-        result = (IStrategyTask)this.getBean(strategy.getTaskName());
-        result.initialTaskParameter(strategy.getStrategyName(), 
-                         strategy.getTaskParameter());
+      } else if (ScheduleStrategy.Kind.Bean == strategy.getKind()) {
+        result = (IStrategyTask) this.getBean(strategy.getTaskName());
+        result.initialTaskParameter(strategy.getStrategyName(), strategy.getTaskParameter());
       }
     } catch (Exception e) {
-      logger.error("strategy 获取对应的java or bean 出错,schedule并没有加载该任务,请确认" +strategy.getStrategyName(),e);
+      logger.error(
+          "strategy 获取对应的java or bean 出错,schedule并没有加载该任务,请确认" + strategy.getStrategyName(), e);
     }
     return result;
   }
 
-  public void refresh() throws Exception{
+  public void refresh() throws Exception {
     this.lock.lock();
     try {
-      //判断状态是否终止
+      // 判断状态是否终止
       ManagerFactoryInfo stsInfo = null;
       boolean isException = false;
       try {
         stsInfo = this.getScheduleStrategyManager().loadManagerFactoryInfo(this.getUuid());
       } catch (Exception e) {
         isException = true;
-        logger.error("获取服务器信息有误：uuid=" + this.getUuid(),e);
+        logger.error("获取服务器信息有误：uuid=" + this.getUuid(), e);
       }
-      
-      if(isException == true){
-        
-      }else if(){
-        
-      }else{
-        
+
+      if (isException == true) {
+        try {
+          stopServer(null); // 停止所有的调度任务
+          this.getScheduleStrategyManager().unRregisterManagerFactory(this);
+        } finally {
+          reRegisterManagerFactory();
+        }
+      } else if (stsInfo.isStart() == false) {
+        stopServer(null);
+        this.getScheduleStrategyManager().unRregisterManagerFactory(this);
+      } else {
+        reRegisterManagerFactory();
       }
-      
-    } finally{
-      // TODO: handle exception
+
+    } finally {
+      this.lock.unlock();
     }
   }
-  
-  public void reRegisterManagerFactory() throws Exception{
-    //重新分配调度器
+
+  public void reRegisterManagerFactory() throws Exception {
+    // 重新分配调度器
     List<String> stopList = this.getScheduleStrategyManager().registerManagerFactory(this);
-    for(String strategyName : stopList){
+    for (String strategyName : stopList) {
       this.stopServer(strategyName);
     }
     this.assignScheduleServer();
-    
+    this.reRunScheduleServer();
   }
-  
+
   /**
    * 根据策略重新分配调度任务的机器
+   * 
    * @throws Exception
    */
-  public void assignScheduleServer() throws Exception{
-    for(ScheduleStrategyRunntime run : this.scheduleStrategyManager
-    		.loadAllScheduleStrategyRunntimeByUUID(this.uuid)){
-    List<ScheduleStrategyRunntime> factoryList =   this.scheduleStrategyManager
-    		.loadAllScheduleStrategyRunntimeByTaskType(run.getStrategyName());
-    if(factoryList.size() == 0 
-    		|| !this.isLeader(this.uuid, factoryList)){
-    	continue;
-    }
-    
+  public void assignScheduleServer() throws Exception {
+    for (ScheduleStrategyRunntime run : this.scheduleStrategyManager
+        .loadAllScheduleStrategyRunntimeByUUID(this.uuid)) {
+      List<ScheduleStrategyRunntime> factoryList =
+          this.scheduleStrategyManager.loadAllScheduleStrategyRunntimeByTaskType(run
+              .getStrategyName());
+      if (factoryList.size() == 0 || !this.isLeader(this.uuid, factoryList)) {
+        continue;
+      }
+      ScheduleStrategy scheduleStrategy =
+          this.scheduleStrategyManager.loadStrategy(run.getStrategyName());
+      int[] nums =
+          ScheduleUtil.assignTaskNumber(factoryList.size(), scheduleStrategy.getAssignNum(),
+              scheduleStrategy.getNumOfSingleServer());
+      for (int i = 0; i < factoryList.size(); i++) {
+        ScheduleStrategyRunntime factory = factoryList.get(i);
+        // 更新请求的服务器数量
+        this.scheduleStrategyManager.updateStrategyRunntimeRequestNum(run.getStrategyName(),
+            factory.getUuid(), nums[i]);
+      }
     }
   }
-  
-  public boolean isLeader(String uuid,
-		  List<ScheduleStrategyRunntime> factoryList){
+
+  public boolean isLeader(String uuid, List<ScheduleStrategyRunntime> factoryList) {
     try {
-		long no = Long.parseLong(uuid.substring(uuid.lastIndexOf("$") + 1));
-		for(ScheduleStrategyRunntime server : factoryList){
-			if(no > Long.parseLong(server.getUuid().substring(
-					server.getUuid().lastIndexOf("$") + 1))){
-				return  false;
-			}
-		}
+      long no = Long.parseLong(uuid.substring(uuid.lastIndexOf("$") + 1));
+      for (ScheduleStrategyRunntime server : factoryList) {
+        if (no > Long.parseLong(server.getUuid().substring(server.getUuid().lastIndexOf("$") + 1))) {
+          return false;
+        }
+      }
+      return true;
     } catch (Exception e) {
-		logger.error("判断leader出错：uuif=" + uuid,e);
-		return true;
-	}   
+      logger.error("判断leader出错：uuif=" + uuid, e);
+      return true;
+    }
   }
-  
-  public void reRunScheduleServer() throws Exception{
-	  for(ScheduleStrategyRunntime run : this.scheduleStrategyManager.loadAllScheduleStrategyRunntimeByUUID(this.uuid)){
-		  List<IStrategyTask> list = this.managerMap.get(run.getStrategyName());
-	  if(list == null){
-		  list = new ArrayList<IStrategyTask>();
-		  this.managerMap.put(run.getStrategyName(), list);
-	  }
-	  
-	  while(list.size() > run.getRequestNum() && list.size() > 0){
-		  IStrategyTask task = list.remove(list.size() -1 );
-		  try {
-			task.stop(run.getStrategyName());
-		} catch (Exception e) {
-			logger.error("注销任务错误：strategyName=" + run.getStrategyName(), e);
-		}
-	  }
-	  
-	 //不足  增加调度器
-	  ScheduleStrategy strategy = this.scheduleStrategyManager
-			  .loadStrategy(run.getStrategyName());
-	  while(list.size() < run.getRequestNum()){
-		  IStrategyTask result = this.createStrategyTask(strategy);
-			if (null == result) {
-				logger.error("strategy 对应的配置有问题。strategy name="
-						+ strategy.getStrategyName());
-			}
-			list.add(result);	  
-	  }
-	  
-	  }
+
+  public void reRunScheduleServer() throws Exception {
+    for (ScheduleStrategyRunntime run : this.scheduleStrategyManager
+        .loadAllScheduleStrategyRunntimeByUUID(this.uuid)) {
+      List<IStrategyTask> list = this.managerMap.get(run.getStrategyName());
+      if (list == null) {
+        list = new ArrayList<IStrategyTask>();
+        this.managerMap.put(run.getStrategyName(), list);
+      }
+
+      while (list.size() > run.getRequestNum() && list.size() > 0) {
+        IStrategyTask task = list.remove(list.size() - 1);
+        try {
+          task.stop(run.getStrategyName());
+        } catch (Exception e) {
+          logger.error("注销任务错误：strategyName=" + run.getStrategyName(), e);
+        }
+      }
+
+      // 不足 增加调度器
+      ScheduleStrategy strategy = this.scheduleStrategyManager.loadStrategy(run.getStrategyName());
+      while (list.size() < run.getRequestNum()) {
+        IStrategyTask result = this.createStrategyTask(strategy);
+        if (null == result) {
+          logger.error("strategy 对应的配置有问题。strategy name=" + strategy.getStrategyName());
+        }
+        list.add(result);
+      }
+
+    }
   }
-  
+
   /**
    * 终止一类任务，如果为null，终止所有任务
+   * 
    * @param strategyName
    * @throws Exception
    */
-  public void stopServer(String strategyName) throws Exception{
-    if(strategyName == null){
+  public void stopServer(String strategyName) throws Exception {
+    if (strategyName == null) {
       String[] nameList = this.managerMap.keySet().toArray(new String[0]);
-      for(String name : nameList){
-        for(IStrategyTask task : this.managerMap.get(name)){
+      for (String name : nameList) {
+        for (IStrategyTask task : this.managerMap.get(name)) {
           try {
             task.stop(name);
           } catch (Exception e) {
-            logger.error("注销任务错误：strategyName="+strategyName,e);
+            logger.error("注销任务错误：strategyName=" + strategyName, e);
           }
         }
         this.managerMap.remove(name);
       }
-    }else{
+    } else {
       List<IStrategyTask> list = this.managerMap.get(strategyName);
-      if(list != null){
-        for(IStrategyTask task : list){
+      if (list != null) {
+        for (IStrategyTask task : list) {
           try {
             task.stop(strategyName);
           } catch (Exception e) {
@@ -308,22 +323,23 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
       }
     }
   }
-  
-  
-  
+
+
+
   /**
    * 停止所有调度资源
+   * 
    * @throws Exception
    */
-  public void stopAll() throws Exception{
+  public void stopAll() throws Exception {
     try {
       lock.lock();
       this.start = false;
-      if(this.initialThread != null){
+      if (this.initialThread != null) {
         this.initialThread.stopThread();
       }
-      if(this.timer != null){
-        if(this.timerTask != null){
+      if (this.timer != null) {
+        if (this.timerTask != null) {
           this.timerTask.cancel();
           this.timerTask = null;
         }
@@ -331,85 +347,86 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
         this.timer = null;
       }
       this.stopServer(null);
-      if(this.zkManager != null){
+      if (this.zkManager != null) {
         this.zkManager.close();
       }
-      
-      if(this.scheduleStrategyManager != null){
+
+      if (this.scheduleStrategyManager != null) {
         try {
           ZooKeeper zk = this.scheduleStrategyManager.getZooKeeper();
-          if(zk != null){
+          if (zk != null) {
             zk.close();
           }
         } catch (Exception e) {
-          logger.error("stopAll zk getZookeeper异常！",e);
+          logger.error("stopAll zk getZookeeper异常！", e);
         }
       }
-      this.uuid  = null;
-     logger.info("stopAll 停止服务成功！");
+      this.uuid = null;
+      logger.info("stopAll 停止服务成功！");
     } catch (Exception e) {
-      logger.info("stopAll 服务失败：" + e.getMessage(),e);
-    }finally{
+      logger.info("stopAll 服务失败：" + e.getMessage(), e);
+    } finally {
       lock.unlock();
     }
   }
-  
-  
+
+
   /**
    * 重启所有的服务
+   * 
    * @throws Exception
    */
-  public void reStart() throws  Exception{
+  public void reStart() throws Exception {
     try {
-      if(this.timer != null){
-        if(this.timerTask != null){
+      if (this.timer != null) {
+        if (this.timerTask != null) {
           this.timerTask.cancel();
           this.timerTask = null;
         }
         this.timer.purge();
       }
       this.stopServer(null);
-      if(this.zkManager != null){
+      if (this.zkManager != null) {
         this.zkManager.close();
       }
       this.uuid = null;
       this.init();
     } catch (Exception e) {
-      logger.error("重启服务失败："+ e.getMessage(),e);
+      logger.error("重启服务失败：" + e.getMessage(), e);
     }
   }
-  
-  public boolean isZookeeperInitialSuccess() throws Exception{
+
+  public boolean isZookeeperInitialSuccess() throws Exception {
     return this.zkManager.checkZookeeperState();
   }
-  
-  public String[] getScheduleTaskDealList(){
+
+  public String[] getScheduleTaskDealList() {
     return applicationcontext.getBeanNamesForType(IScheduleTaskDeal.class);
   }
-  
-  public IScheduleDataManager getScheduleDataManager(){
-    if(this.scheduleDataManager == null){
+
+  public IScheduleDataManager getScheduleDataManager() {
+    if (this.scheduleDataManager == null) {
       throw new RuntimeException(this.errorMesage);
     }
     return scheduleDataManager;
   }
-  
-  public ScheduleStrategyDataManager4ZK getScheduleStrategyManager(){
-    if(this.scheduleDataManager == null){
+
+  public ScheduleStrategyDataManager4ZK getScheduleStrategyManager() {
+    if (this.scheduleDataManager == null) {
       throw new RuntimeException(this.errorMesage);
     }
-    return scheduleStrategyManager; 
+    return scheduleStrategyManager;
   }
-  
-  
+
+
   public void setApplicationContext(ApplicationContext aApplicationcontext) throws BeansException {
-        applicationcontext = aApplicationcontext;
+    applicationcontext = aApplicationcontext;
   }
 
   public ZKManager getZkManager() {
     return this.zkManager;
- }
-  
+  }
+
   public String getUuid() {
     return uuid;
   }
@@ -437,12 +454,12 @@ public class TBScheduleManagerFactory implements ApplicationContextAware {
   public void setZkConfig(Map<String, String> zkConfig) {
     this.zkConfig = zkConfig;
   }
-  
+
   public Object getBean(String beanName) {
     return applicationcontext.getBean(beanName);
   }
-  
-  public Map<String,String> getZkConfig() {
+
+  public Map<String, String> getZkConfig() {
     return zkConfig;
   }
 }
@@ -468,21 +485,21 @@ class ManagerFactoryTimerTask extends TimerTask {
   public void run() {
     try {
       Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-      if(this.factory.zkManager.checkZookeeperState() == false){
-        if(count > 5){
+      if (this.factory.zkManager.checkZookeeperState() == false) {
+        if (count > 5) {
           log.error("Zookeeper连接失败，关闭所有的任务后，重新连接Zookeeper服务器......");
           this.factory.reStart();
-        }else{
+        } else {
           count = count + 1;
         }
-        
-      }else{
+
+      } else {
         count = 0;
         this.factory.refresh();
       }
     } catch (Exception ex) {
-        log.error(ex.getMessage(),ex);
-    }finally{
+      log.error(ex.getMessage(), ex);
+    } finally {
       factory.timerTaskHeartBeatTS = System.currentTimeMillis();
     }
 
@@ -509,23 +526,24 @@ class InitialThread extends Thread {
     facotry.lock.lock();
     try {
       int count = 0;
-      while(facotry.zkManager.checkZookeeperState() == false){
+      while (facotry.zkManager.checkZookeeperState() == false) {
         count = count + 1;
-        if(count % 50 == 0){
-          facotry.errorMesage= "Zookeeper connecting ......" 
-              + facotry.zkManager.getConnectStr() + " spendTime:" + count * 20 +"(ms)";
+        if (count % 50 == 0) {
+          facotry.errorMesage =
+              "Zookeeper connecting ......" + facotry.zkManager.getConnectStr() + " spendTime:"
+                  + count * 20 + "(ms)";
           log.error(facotry.errorMesage);
         }
         Thread.sleep(20);
-        if(this.isStop)
-          return ;
+        if (this.isStop)
+          return;
       }
-      
-      //已初始化zk后初始化数据
+
+      // 已初始化zk后初始化数据
       facotry.initialData();
     } catch (Exception e) {
-      log.error(e.getMessage(),e);
-    }finally{
+      log.error(e.getMessage(), e);
+    } finally {
       facotry.lock.unlock();
     }
   }
