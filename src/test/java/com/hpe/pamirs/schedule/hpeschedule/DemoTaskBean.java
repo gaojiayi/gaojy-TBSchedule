@@ -43,8 +43,15 @@ public class DemoTaskBean implements IScheduleTaskDealSingle<Long>{
     for(TaskItemDefine s : queryCondition){
       long taskItem = Integer.parseInt(s.getTaskItemId()) * 10000000L;
       for(int i = 0; i < num ; i++){
-        result.add(taskItem + random.nextLong() % 100000L)
+        result.add(taskItem + random.nextLong() % 100000L);
       }
+      
+      if(isFirst == false){
+    	  message = message + ",";
+      }else{
+    	  isFirst = false;
+      }
+      message = message + s.getTaskItemId() + "{" + s.getParameter() + "}";
     }
     log.info(message);
     return result;
