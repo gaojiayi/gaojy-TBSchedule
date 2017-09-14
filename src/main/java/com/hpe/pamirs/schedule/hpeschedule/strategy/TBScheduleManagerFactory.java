@@ -29,7 +29,7 @@ import com.hpe.pamirs.schedule.hpeschedule.zk.ZKManager;
 
 /**
  * Title: 调度服务器构造器 使用springcontext来初始化配置
- * 
+ *  通过ApplicationContextAware加载Spring上下文环境
  * @author gaojy
  *
  *         Create Date :2017年8月21日 Update Date :

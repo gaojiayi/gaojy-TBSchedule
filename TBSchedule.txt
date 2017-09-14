@@ -1,0 +1,83 @@
+/[v.0][]
+/taobao-pamirs-schedule
+/taobao-pamirs-schedule/gaojy[v.1][taobao-pamirs-schedule-3.0.0]
+/taobao-pamirs-schedule/gaojy/baseTaskType
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask[v.0][{"baseTaskType":"DemoTask","heartBeatRate":2000,"judgeDeadInterval":10000,"sleepTimeNoData":500,"sleepTimeInterval":0,"fetchDataNumber":500,"executeNumber":1,"threadNumber":5,"processorType":"SLEEP","expireOwnSignInterval":1.0,"dealBeanName":"demoTaskBean","taskParameter":"AREA\u003d杭州,YEAR\u003e30","taskKind":"static","taskItems":["0:{TYPE\u003dA,KIND\u003d1}","1:{TYPE\u003dA,KIND\u003d2}","2:{TYPE\u003dA,KIND\u003d3}","3:{TYPE\u003dA,KIND\u003d4}","4:{TYPE\u003dA,KIND\u003d5}","5:{TYPE\u003dA,KIND\u003d6}","6:{TYPE\u003dA,KIND\u003d7}","7:{TYPE\u003dA,KIND\u003d8}","8:{TYPE\u003dA,KIND\u003d9}","9:{TYPE\u003dA,KIND\u003d10}"],"maxTaskItemsOfOneThreadGroup":0,"version":0,"sts":"resume"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server[v.2][reload=true]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$106FD6C19A154075823F6FA3AE679235$0000000022[v.28][{"uuid":"DemoTask$TEST$192.168.1.108$106FD6C19A154075823F6FA3AE679235$0000000022","id":17091448327773,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:23","lastFetchDataTime":"2017-09-14 05:19:22","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d7,FetchDataNum\u003d3500,DealDataSucess\u003d3107,DealDataFail\u003d0,DealSpendTime\u003d156072,otherCompareCount\u003d0","version":27,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$2BEF2CD318A54E709D14EC37C2CA8B5E$0000000019[v.31][{"uuid":"DemoTask$TEST$192.168.1.108$2BEF2CD318A54E709D14EC37C2CA8B5E$0000000019","id":17091404583807,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:23","lastFetchDataTime":"2017-09-14 05:19:18","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d6,FetchDataNum\u003d3000,DealDataSucess\u003d2965,DealDataFail\u003d0,DealSpendTime\u003d148945,otherCompareCount\u003d0","version":30,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$3B638B5E324346F99CDDDBFD9E46AF29$0000000024[v.29][{"uuid":"DemoTask$TEST$192.168.1.108$3B638B5E324346F99CDDDBFD9E46AF29$0000000024","id":17091489821929,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:43","heartBeatTime":"2017-09-14 05:19:24","lastFetchDataTime":"2017-09-14 05:19:23","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d7,FetchDataNum\u003d3500,DealDataSucess\u003d3071,DealDataFail\u003d0,DealSpendTime\u003d154375,otherCompareCount\u003d0","version":28,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$88031AE208094AC4B9B9075601414E23$0000000026[v.29][{"uuid":"DemoTask$TEST$192.168.1.108$88031AE208094AC4B9B9075601414E23$0000000026","id":17091402040016,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:43","heartBeatTime":"2017-09-14 05:19:24","lastFetchDataTime":"2017-09-14 05:19:23","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d7,FetchDataNum\u003d3500,DealDataSucess\u003d3104,DealDataFail\u003d0,DealSpendTime\u003d156116,otherCompareCount\u003d0","version":28,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$A83C3A0E00C2465FA03CFA68A4DF459F$0000000016[v.34][{"uuid":"DemoTask$TEST$192.168.1.108$A83C3A0E00C2465FA03CFA68A4DF459F$0000000016","id":17091482277231,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:23","lastFetchDataTime":"2017-09-14 05:19:18","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d6,FetchDataNum\u003d3000,DealDataSucess\u003d2943,DealDataFail\u003d0,DealSpendTime\u003d147750,otherCompareCount\u003d0","version":33,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$B2D7A33442434D4A83C59349C508458A$0000000011[v.29][{"uuid":"DemoTask$TEST$192.168.1.108$B2D7A33442434D4A83C59349C508458A$0000000011","id":17091476431669,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:22","lastFetchDataTime":"2017-09-14 05:19:18","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d6,FetchDataNum\u003d3000,DealDataSucess\u003d2917,DealDataFail\u003d0,DealSpendTime\u003d146673,otherCompareCount\u003d0","version":28,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$BD1491C4CDD44901B5BAD486ABBA274C$0000000027[v.29][{"uuid":"DemoTask$TEST$192.168.1.108$BD1491C4CDD44901B5BAD486ABBA274C$0000000027","id":17091404671628,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:44","heartBeatTime":"2017-09-14 05:19:22","lastFetchDataTime":"2017-09-14 05:19:18","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d6,FetchDataNum\u003d3000,DealDataSucess\u003d2923,DealDataFail\u003d0,DealSpendTime\u003d146912,otherCompareCount\u003d0","version":28,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$BFA1F570BE76427FAE9F8B51EA4A7DE8$0000000013[v.30][{"uuid":"DemoTask$TEST$192.168.1.108$BFA1F570BE76427FAE9F8B51EA4A7DE8$0000000013","id":17091497710548,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:22","lastFetchDataTime":"2017-09-14 05:19:18","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d6,FetchDataNum\u003d3000,DealDataSucess\u003d2933,DealDataFail\u003d0,DealSpendTime\u003d147267,otherCompareCount\u003d0","version":29,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$E2EA4BBC655B4BA6A7520ECC10A31572$0000000009[v.24][{"uuid":"DemoTask$TEST$192.168.1.108$E2EA4BBC655B4BA6A7520ECC10A31572$0000000009","id":17091438878981,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:42","heartBeatTime":"2017-09-14 05:19:24","lastFetchDataTime":"2017-09-14 05:19:22","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d7,FetchDataNum\u003d3500,DealDataSucess\u003d3160,DealDataFail\u003d0,DealSpendTime\u003d158830,otherCompareCount\u003d0","version":23,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/server/DemoTask$TEST$192.168.1.108$E562336E00C64F9E8283925C095537B0$0000000025[v.29][{"uuid":"DemoTask$TEST$192.168.1.108$E562336E00C64F9E8283925C095537B0$0000000025","id":17091418769942,"taskType":"DemoTask$TEST","baseTaskType":"DemoTask","ownSign":"TEST","ip":"192.168.1.108","hostName":"TMEFSIZWXATAISD","threadNum":5,"registerTime":"2017-09-14 05:18:43","heartBeatTime":"2017-09-14 05:19:23","lastFetchDataTime":"2017-09-14 05:19:21","dealInfoDesc":"开启服务立即启动:FetchDataCount\u003d7,FetchDataNum\u003d3500,DealDataSucess\u003d3208,DealDataFail\u003d0,DealSpendTime\u003d161164,otherCompareCount\u003d0","version":28,"isRegister":true,"managerFactoryUUID":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004"}]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem[v.20][DemoTask$TEST$192.168.1.108$E2EA4BBC655B4BA6A7520ECC10A31572$0000000009]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0/cur_server[v.1][DemoTask$TEST$192.168.1.108$E2EA4BBC655B4BA6A7520ECC10A31572$0000000009]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0/parameter[v.0][TYPE=A,KIND=1]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/0/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1/cur_server[v.1][DemoTask$TEST$192.168.1.108$B2D7A33442434D4A83C59349C508458A$0000000011]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1/parameter[v.0][TYPE=A,KIND=2]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/1/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2/cur_server[v.1][DemoTask$TEST$192.168.1.108$BFA1F570BE76427FAE9F8B51EA4A7DE8$0000000013]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2/parameter[v.0][TYPE=A,KIND=3]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/2/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3/cur_server[v.1][DemoTask$TEST$192.168.1.108$A83C3A0E00C2465FA03CFA68A4DF459F$0000000016]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3/parameter[v.0][TYPE=A,KIND=4]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/3/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4/cur_server[v.1][DemoTask$TEST$192.168.1.108$2BEF2CD318A54E709D14EC37C2CA8B5E$0000000019]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4/parameter[v.0][TYPE=A,KIND=5]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/4/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5/cur_server[v.1][DemoTask$TEST$192.168.1.108$106FD6C19A154075823F6FA3AE679235$0000000022]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5/parameter[v.0][TYPE=A,KIND=6]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/5/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6/cur_server[v.1][DemoTask$TEST$192.168.1.108$3B638B5E324346F99CDDDBFD9E46AF29$0000000024]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6/parameter[v.0][TYPE=A,KIND=7]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/6/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7/cur_server[v.1][DemoTask$TEST$192.168.1.108$E562336E00C64F9E8283925C095537B0$0000000025]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7/parameter[v.0][TYPE=A,KIND=8]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/7/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8/cur_server[v.1][DemoTask$TEST$192.168.1.108$88031AE208094AC4B9B9075601414E23$0000000026]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8/parameter[v.0][TYPE=A,KIND=9]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/8/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9/cur_server[v.1][DemoTask$TEST$192.168.1.108$BD1491C4CDD44901B5BAD486ABBA274C$0000000027]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9/deal_desc[v.0][]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9/parameter[v.0][TYPE=A,KIND=10]
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9/req_server
+/taobao-pamirs-schedule/gaojy/baseTaskType/DemoTask/DemoTask$TEST/taskItem/9/sts[v.0][ACTIVTE]
+/taobao-pamirs-schedule/gaojy/factory
+/taobao-pamirs-schedule/gaojy/factory/192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004
+/taobao-pamirs-schedule/gaojy/strategy
+/taobao-pamirs-schedule/gaojy/strategy/DemoTask-Strategy[v.0][{"strategyName":"DemoTask-Strategy","IPList":["127.0.0.1"],"numOfSingleServer":1,"assignNum":10,"kind":"Schedule","taskName":"DemoTask$TEST","taskParameter":"中国","sts":"resume"}]
+/taobao-pamirs-schedule/gaojy/strategy/DemoTask-Strategy/192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004[v.1][{"strategyName":"DemoTask-Strategy","uuid":"192.168.1.108$TMEFSIZWXATAISD$B68C3FCAD4FE4C9CA505004DDB30E8EA$0000000004","requestNum":10,"currentNum":0,"message":""}]
